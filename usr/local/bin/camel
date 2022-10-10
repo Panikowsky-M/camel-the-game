@@ -1,0 +1,167 @@
+#!/usr/bin/python3.9
+from tkinter import *
+import json,random
+
+okno = Tk()
+
+okno['bg'] =  'black'
+
+okno.title('Верблюд из пустыни Гоби')
+okno.geometry('500x500')
+
+okno.resizable(width=False,height=False)
+
+with open('/usr/share/cmg/media/wordlist','r') as wf:
+    words = json.load(wf)
+
+z = 4 # Вода
+s = 0 # Расстояние
+c = 0
+c1 = 0
+q = 0
+E = 15 # Выносливость
+
+def Game(event):
+    global s
+    global z
+    global E
+    global c
+    global Loose1
+    print('Caught ' +event.keysym+' button')
+    if event.keysym == "Return":
+        Output.configure(text=words['1'])
+    elif event.keysym == 'y':
+        Output.configure(text=words['2'])
+    elif event.keysym == 'n':
+        Output.configure(text=words['3'])
+    elif event.keysym == '1':
+        z-=1
+        E = 15
+        print('Залишилося води: '+str(z))
+        print('Сили відновлені, можна продовжувати шлях')
+    elif event.keysym == '2':
+        s += random.randint(1,3) + 2
+        E -= random.randint(1,2) + 1
+        print('Пройдена вiдстань: '+str(s))
+        print('Залишилось сил: '+str(E))
+    elif event.keysym == '3':
+        s += random.randint(3,9) + 2
+        E -= random.randint(2,4) + 1
+        print('Пройдена вiдстань: '+str(s))
+        print('Залишилось сил: '+str(E))
+    elif event.keysym == '4':
+        d = random.randint(1,16)
+        if d < 13:
+            print('Тут небезпечно')
+        else:
+            E = 15
+            print('Сили відновлені, можна продовжувати шлях')
+        if d < 12:
+            print('Верблюду не подобається це місце')
+            Output.configure(text='\nThis is unsafety place! Find another one.\n')
+        else:
+            E = 15
+            print('Сили відновлені, можна продовжувати шлях')
+        e1 = random.randint(1,8)+2
+        if e1 >= 10:
+            print('Ви потрапили в полон!\n\
+Що робити? №7 утекти Чи №8 чекати на викуп\n')
+            Output.configure(text=words['10'])
+    elif event.keysym == '7':
+        e1 = random.randint(12,18)+2
+        if e1 >= 12:
+            print('Вам вдалося вибратися з полону')
+            Output.configure(text=words['13'])
+        else:
+            print('Вас з\'їли берберки')
+            Output.configure(text=words['11'])
+            Loose()
+    elif event.keysym == '8':
+        e1 = random.randint(12,18)+2
+        if e1 >= 16:
+            print(e1)
+            print('Місцевий шейх вирішив вас викупити')
+            Output.configure(text=words['9'])
+            E += random.randint(1,5)
+            print('Сили відновлені, можна продовжувати шлях')
+            z += random.randint(1,3)
+            print('Запаси води поповнені: '+str(z))
+        else:
+            print('Аборигени забрали вас у рабство')
+            Output.configure(text=words['14'])
+            Loose()
+
+    elif event.keysym == 'q':
+        okno.destroy()
+    elif event.keysym == '6':
+        h = random.randint(1,10)+2
+        if h == 10:
+            print('Допомога прибула, вас знайшли непритомні')
+            Output.configure(text=words['16'])
+            z += 1
+            E = 15
+        else:
+            print('Ви і ваш верблюд загинули у пустелі')
+            Output.configure(text='You dead in the desert')
+            Loose()
+
+
+    o = random.randint(1,100)
+    if o > 97:
+        E = 15
+        z += random.randint(2,3)+1
+        Output.configure(text=words['12'])
+        print('Ви знайшли оазис, запаси води поповнені')
+
+    if event.keysym == '5':
+        Output.configure(text=words['15'].format(z,E,s))
+
+    if s > 200:
+        print('Выигрыш')
+        Output.configure(text=words['6'])
+        Win()
+        
+    if z == 1:
+        print('Вода')
+        Output.configure(text=words['4'])
+    elif z < 0:
+        print('Ви і ваш верблюд загинули у пустелі')
+        Loose()
+    if E <= 0:
+        print('Потрібен відпочинок!')
+        if E < 0:
+            Output.configure(text=words['7'])
+            print('Ви і ваш верблюд загинули у пустелі')
+            Loose()
+    elif z < 0:
+        Output.configure(text=words['5'])
+        Output.configure(text='\nYou died in the desert.\n')
+
+lt = Label(text = 'Camel\n Creative Computing\n Morristown,\
+ New Jersey\n Press Enter to start\n', font=('Courier New','12'),fg='white', bg='black')
+Output = Label(height=12, font=('Courier New',14), fg='gold3', bg='chocolate4')
+lt.pack()
+Output.pack(fill=X)
+okno.bind('<Key>', Game)
+
+canvas = Canvas(okno, width=128,height=128)
+obj=PhotoImage(file="/usr/share/cmg/media/loose2.png")
+canvas.create_image(60,120,anchor=S,image=obj)
+def Loose():
+    okno.after(500)
+    print('Гра закінчена, вимикаюсь') 
+    Output.configure(text='Не курю и вам не советую')
+    canvas.pack()
+    okno.after(4000,okno.destroy)
+
+canvas2 = Canvas(okno, width=128,height=128)
+obj2=PhotoImage(file="/usr/share/cmg/media/win2.png")
+canvas2.create_image(60,120,anchor=S,image=obj2)
+def Win():
+    okno.after(300)
+    print('Перемога, вимикаюсь') 
+    Output.configure(text='Победа,можно перекурить!')
+    canvas2.pack()
+    okno.after(4000,okno.destroy)
+
+okno.mainloop()

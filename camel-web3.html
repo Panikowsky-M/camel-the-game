@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brython Camel</title>
+    <style type=text/css>
+     body {background-color: black;}
+     h1 {color: white;}
+     p {color: yellow;}
+    </style>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.8.9/brython.min.js">
+    </script>
+</head>
+
+<body onload="brython()">
+
+    <h1 class="text-center">Camel built with <a href="https://brython.info">Python!</a></h1>
+    <canvas id="game-board" width="0" height="0"></canvas>
+    <br>
+    <p>
+    <img src='https://img.freepik.com/premium-vector/camels-walking-through-desert-eid-mubarak-greeting-card-ramadan-kareem-template-arabic-landscape-horizontal-illustration_513640-429.jpg' width=128 height=128>
+</p>
+    <p id="story" class="text-center"></p>
+    <br>
+    <p id="debug" class="text-center"></p>
+
+    <script type="text/python">
+        
+        from browser import document, html, window
+        from javascript import Math
+        
+        text = "" 
+        pre_pause = [0,0]
+        paused = False
+	s=0
+	O=15
+	b=4
+	A=0
+	k=0
+	a=0
+   
+        def game():
+            update_story(story)
+        
+        def update_story(new_text):
+            global text
+            document["story"].innerHTML = + str(new_text)
+
+        def update_win(new_win):
+            global text
+            document["debug"].innerHTML = "Вы прошли пустыню на: " + str(new_win) + "км"
+
+        def key_push(evt):
+            global pre_pause, paused, text, win
+	    global s,O,b,A,k,a
+            key = evt.keyCode
+            if key == 49 and not paused:
+	        s+= Math.floor(Math.random() * 4) + 1 
+		O-= Math.floor(Math.random() * 5) + 1 
+                document["story"].innerHTML = "Вы прошли расстояние: " +str(s)
+                # document["debug"].innerHTML = "Силы: " +str(O)
+            elif key == 50 and not paused:
+	        s+= Math.floor(Math.random() * 10) + 1 
+	        O-= Math.floor(Math.random() * 8) + 1
+                document["story"].innerHTML = "Вы прошли расстояние: " +str(s)
+                # document["debug"].innerHTML = "Силы: " +str(O)
+	    elif key == 51 and b > 0 and not paused:
+	        O=15
+		b-=1
+		A += Math.floor(Math.random() * 16) + 1
+                document["story"].innerHTML = "Силы восстановлены"
+                # document["debug"].innerHTML = "Вода: " +str(b)
+	    elif key == 53 and not paused:
+	        if A >= 14:
+		    s+=20
+		    O=15
+		    b+=Math.floor(Math.random() * 4) + 1 
+                    document["story"].innerHTML = "Прибыла подмога, вас нашли без сознания"
+		else:
+                    document["story"].innerHTML = "Вы сбились с пути, ваш верблюд погиб, вы умерли от обезвоживания!"
+		    paused = True
+		    update_win(s)
+	    elif key == 54:
+		document["story"].innerHTML = "Расстояние: " + str(s) + "<br>" + "Силы: " + str(O) + "<br>" + "Вода: " + str(b)
+	      
+            elif key and not paused:
+                document["story"].innerHTML = "Pressed "+str(key)+" button"
+                pre_pause = [*temp]
+                paused = not paused
+	    if O < 0:
+	        update_win(s)
+	        b = 0 
+	        O = -255
+                document["story"].innerHTML = "Проигрыш"
+		paused = True
+	    elif s > 200:
+		update_win(s)
+                document["story"].innerHTML = "Выигрыш"
+		paused = True
+
+
+            
+        def show_instructions(evt):
+            window.alert("Use the arrow keys to move and press spacebar to pause the game.")
+        
+        canvas = document["game-board"]
+        ctx = canvas.getContext("2d")
+        document.addEventListener("keydown", key_push)
+        game_loop = window.setInterval(game, 1000/15)
+        instructions_btn = document["instructions-btn"]
+        instructions_btn.addEventListener("click", show_instructions)
+    
+</script>
+
+</body>
+
+</html>
